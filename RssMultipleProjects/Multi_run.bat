@@ -1,0 +1,2 @@
+python RssProject.py
+pause  
