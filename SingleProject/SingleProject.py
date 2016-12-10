@@ -3,17 +3,15 @@
 
 # __author__ = 'CorttChan<cortt.me@gmail.com>'
 
-import os
+import urllib.request
+import time
+import socket
+import wget
 from bs4 import BeautifulSoup
-import urllib.request, time, socket, wget
-from urllib.error import (
-    HTTPError,
-    URLError
-)
+from urllib.error import (HTTPError,URLError)
 
 # 输入Archdaily项目网址
 project_url = input('请输入Archdaily项目网址:')
-# project_url = r'http://www.archdaily.com/800818/nio-brand-creative-studio-shanghai-linehouse'
 
 # 定义获取项目网页函数'GetHTML'
 def GetHTML(url):
@@ -23,7 +21,6 @@ def GetHTML(url):
     opener = urllib.request.build_opener()
     opener.addheaders = [headers]
     try:
-        # html = urllib.request.urlopen(url,timeout=20)
         html = opener.open(url)
         Project_bs = BeautifulSoup(html.read(), 'lxml')
         html.close()
@@ -33,6 +30,7 @@ def GetHTML(url):
         print('网络连接超时，请稍后重试')
     else:
         return Project_bs
+
 
 # 定义获取原始图片地址函数'Geturls'
 def Geturls(html_bs):
@@ -50,7 +48,6 @@ def Geturls(html_bs):
 
 
 # 定义创建项目文件夹目录函数
-# 参考：http://www.qttc.net/201209207.html
 def mkdir(path):
     import os
     print('--------------------创建项目文件夹:')
@@ -75,14 +72,10 @@ def Gettitl(html_bs):
     # 去除首位空格
     project_name = project_name.strip()
     # 去除特殊字符
-    # from string import maketrans
     intab = ' /+'
     outtab = '___'
     trantab = project_name.maketrans(intab, outtab)
     project_name = project_name.translate(trantab)
-    # print (project_name)
-    # 获取脚本所在文件夹//os.getcwd()
-    # downloadDir = os.getcwd() + '\\Archdaily\\'
     downloadDir = '.\\Archdaily\\'
     project_Dir = downloadDir + project_name
     return project_Dir
@@ -99,7 +92,7 @@ def Download_imgs(url,path):
     # 初始图片数量
     pics_num = len(url)
     # 初始化下载错误链接url
-    failurl = []
+    # failurl = []
     # 初始化已完成连接url
     sucurl = []
     while True:
@@ -109,12 +102,12 @@ def Download_imgs(url,path):
                     print('\n' + '开始下载第 __' + str(loop) + '_' + str(index) + '__ 张图片：')
                     file = wget.download(i, path)
                 except socket.timeout as e:
-                    print('\n' + '--------------------错误代码： %s' % e)
+                    print('\n' + '--------------------网络连接错误： %s' % e)
                     print('--------------------图片下载错误，稍后自动重试')
                     index += 1
-                    failurl.append(i)
+                    # failurl.append(i)
                 except Exception as e:
-                    print('\n' + '--------------------错误代码： %s' % e)
+                    print('\n' + '--------------------网络连接错误： %s' % e)
                     print('--------------------图片下载错误，稍后自动重试')
                     index += 1
                     # failurl.append(i)
@@ -148,4 +141,3 @@ for i in imgs:
 txtfile.close()
 # 开始下载项目原图
 Download_imgs(imgs,path)
-# print('\n'*2 + '--------------------项目原图下载完毕')
