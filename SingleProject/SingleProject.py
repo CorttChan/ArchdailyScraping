@@ -89,35 +89,46 @@ def Gettitl(html_bs):
 
 
 def Download_imgs(url,path):
+    print('--------------------项目原图总数: ' + str(len(url)) + ' 张')
     # 设置全局超时时间
     socket.setdefaulttimeout(50)
+    # 初始循环计数器
+    loop = 1
     # 初始化计数器
     index = 1
+    # 初始图片数量
+    pics_num = len(url)
     # 初始化下载错误链接url
     failurl = []
-    print('--------------------项目原图总数: ' + str(len(url)) + ' 张')
-    for i in url:
-        # filename = 'pic_' + str(index) + '.jpg'
-        # filepath = project_Dir + '\\' + filename
-        try:
-            print('\n' + '开始下载第 __' + str(index) + '__ 张图片：')
-            file = wget.download(i, path)
-        except socket.timeout as e:
-            print('\n' + '--------------------错误代码： %s' % e)
-            print('--------------------图片下载错误，稍后自动重试')
-            index += 1
-            failurl.append(i)
-        except Exception as e:
-            print('\n' + '--------------------错误代码： %s' % e)
-            print('--------------------图片下载错误，稍后自动重试')
-            index += 1
-            failurl.append(i)
-        else:
-            index += 1
-            # print(file + '\n' + '下载完毕')
-        time.sleep(1)
-    return failurl
-    # print('--------------------完成下载图片数量: ' + str(index-1))
+    # 初始化已完成连接url
+    sucurl = []
+    while True:
+        for i in url:
+            if i not in sucurl:
+                try:
+                    print('\n' + '开始下载第 __' + str(loop) + '_' + str(index) + '__ 张图片：')
+                    file = wget.download(i, path)
+                except socket.timeout as e:
+                    print('\n' + '--------------------错误代码： %s' % e)
+                    print('--------------------图片下载错误，稍后自动重试')
+                    index += 1
+                    failurl.append(i)
+                except Exception as e:
+                    print('\n' + '--------------------错误代码： %s' % e)
+                    print('--------------------图片下载错误，稍后自动重试')
+                    index += 1
+                    # failurl.append(i)
+                else:
+                    index += 1
+                    sucurl.append(i)
+                    # print(file + '\n' + '下载完毕')
+                time.sleep(1)
+            else:
+                continue
+        loop += 1
+        if len(sucurl) == pics_num:
+            break
+    print('\n' * 2 + '--------------------项目原图下载完毕')
 
 
 # 脚本运行
@@ -137,4 +148,4 @@ for i in imgs:
 txtfile.close()
 # 开始下载项目原图
 Download_imgs(imgs,path)
-print('\n'*2 + '--------------------项目原图下载完毕')
+# print('\n'*2 + '--------------------项目原图下载完毕')
