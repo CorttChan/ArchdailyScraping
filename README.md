@@ -7,9 +7,14 @@
 -------------------------  
 **v1.1**
 
-1. 解决网址解码错误：  
+1. 修正部分网址解码错误：  
 错误代码   
   `'gbk' codec can't encode character '\xa9' in position 94: illegal multibyte sequence`
-2. url_list.txt文件编码错误：        
+2. 修正少数情况下url_list.txt文件编码错误：        
   `encoding='utf-8'`
-2. 下载完毕后删除临时缓存文件
+2. 下载完毕后清理临时缓存
+  
+  
+**v1.0**
+  
+单项目原图下载
