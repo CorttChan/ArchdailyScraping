@@ -12,7 +12,7 @@
   `'gbk' codec can't encode character '\xa9' in position 94: illegal multibyte sequence`
 2. 修正少数情况下url_list.txt文件编码错误：        
   `encoding='utf-8'`
-2. 下载完毕后清理临时缓存
+2. 添加下载完毕后清理临时缓存功能
   
   
 **v1.0**
