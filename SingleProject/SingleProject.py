@@ -1,20 +1,26 @@
 #!python3
-# coding:utf-8
-
+#-*- coding：utf-8 -*-
 # __author__ = 'CorttChan<cortt.me@gmail.com>'
 
 import urllib.request
 import time
 import socket
-import wget
+from colorama import Fore,init
 from bs4 import BeautifulSoup
 from urllib.error import (HTTPError,URLError)
 
-# 输入Archdaily项目网址
-project_url = input('请输入Archdaily项目网址:')
+import deltmp
+import auright
+import Dimgs
+
+
+init(autoreset=True)
+# 版本声明
+auright.pright()
 
 # 定义获取项目网页函数'GetHTML'
 def GetHTML(url):
+    print('\n' * 2 + '--------------------项目网页解析中……')
     # 添加'User-Agent'
     headers = ('User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36')
     # 读取项目网页
@@ -25,9 +31,9 @@ def GetHTML(url):
         Project_bs = BeautifulSoup(html.read(), 'lxml')
         html.close()
     except (HTTPError,URLError) as e:
-        print('网页未找到，请检查网络是否通畅，网址是否正确')
+        print(Fore.RED + '--------------------网页未找到，请检查网络是否通畅，网址是否正确')
     except socket.timeout as e:
-        print('网络连接超时，请稍后重试')
+        print(Fore.RED + '--------------------网络连接超时，请稍后重试')
     else:
         return Project_bs
 
@@ -42,7 +48,8 @@ def Geturls(html_bs):
     # 原图url修改
     pics_url = []
     for i in pics_original_url:
-        pics_url.append(i.split('?')[0])
+        url = urllib.request.unquote(i,encoding='utf-8')             # 网址解码
+        pics_url.append(url.split('?')[0])
     # 返回项目原图url列表
     return pics_url
 
@@ -72,72 +79,57 @@ def Gettitl(html_bs):
     # 去除首位空格
     project_name = project_name.strip()
     # 去除特殊字符
-    intab = ' /+'
-    outtab = '___'
+    intab = '/\:*?"<>|'
+    outtab = '---------'
     trantab = project_name.maketrans(intab, outtab)
     project_name = project_name.translate(trantab)
     downloadDir = '.\\Archdaily\\'
     project_Dir = downloadDir + project_name
     return project_Dir
 
-
-def Download_imgs(url,path):
-    print('--------------------项目原图总数: ' + str(len(url)) + ' 张')
-    # 设置全局超时时间
-    socket.setdefaulttimeout(50)
-    # 初始循环计数器
-    loop = 1
-    # 初始化计数器
-    index = 1
-    # 初始图片数量
-    pics_num = len(url)
-    # 初始化下载错误链接url
-    # failurl = []
-    # 初始化已完成连接url
-    sucurl = []
-    while True:
-        for i in url:
-            if i not in sucurl:
-                try:
-                    print('\n' + '开始下载第 __' + str(loop) + '_' + str(index) + '__ 张图片：')
-                    file = wget.download(i, path)
-                except socket.timeout as e:
-                    print('\n' + '--------------------网络连接错误： %s' % e)
-                    print('--------------------图片下载错误，稍后自动重试')
-                    index += 1
-                    # failurl.append(i)
-                except Exception as e:
-                    print('\n' + '--------------------网络连接错误： %s' % e)
-                    print('--------------------图片下载错误，稍后自动重试')
-                    index += 1
-                    # failurl.append(i)
-                else:
-                    index += 1
-                    sucurl.append(i)
-                    # print(file + '\n' + '下载完毕')
-                time.sleep(1)
-            else:
-                continue
-        loop += 1
-        if len(sucurl) == pics_num:
-            break
-    print('\n' * 2 + '--------------------项目原图下载完毕')
-
+# 定义图片url保存函数
+def saveurls(list,path):
+    # 保存下载列表到本地
+    print('--------------------保存图片地址列表到url_list.txt文件')
+    txtpath = path + '\\' + 'url_list.txt'
+    txtfile = open(txtpath, 'w', encoding='utf-8')
+    txtfile.write('项目原图总数 ' + str(len(list)) + r' 张：' + '\n')
+    for i in list:
+        txtfile.write(i + '\n')
+    txtfile.close()
 
 # 脚本运行
-print('\n'*3 + '--------------------项目网页解析中……')
-html_bs = GetHTML(project_url)
-path = Gettitl(html_bs)
-imgs = Geturls(html_bs)
-# 调用自定义函数'mkdir'创建项目文件夹
-mkdir(path)
-# 保存下载列表到本地
-print('--------------------保存图片地址列表到url_list.txt文件')
-txtpath = path + '\\' + 'url_list.txt'
-txtfile = open(txtpath,'w')
-txtfile.write('项目原图总数 ' + str(len(imgs)) + r' 张：' + '\n')
-for i in imgs:
-    txtfile.write(i+'\n')
-txtfile.close()
-# 开始下载项目原图
-Download_imgs(imgs,path)
+def main():
+    while True:
+        # 输入Archdaily项目网址
+        project_url = input('--------------------请输入Archdaily项目网址:')
+        # 检查网址合法性
+        while 'www.archdaily.com' not in project_url:
+            project_url= input('\n' + '--------------------网址错误，请重新输入正确网址：')
+
+        html_bs = GetHTML(project_url)
+        path = Gettitl(html_bs)
+        imgs = Geturls(html_bs)
+        # 调用自定义函数'mkdir'创建项目文件夹
+        mkdir(path)
+        # 保存下载列表到本地
+        saveurls(imgs, path)
+        # 开始下载项目原图
+        Dimgs.Download(imgs, path)
+        print('--------------------清理临时缓存中……')
+        time.sleep(1)
+        deltmp.DeleteTmp()
+
+        #判断是否继续下载其他项目
+        keepgoing = input('\n' + '--------------------继续下载其他项目? (-Y/N-): ')
+        if keepgoing == 'Y' or keepgoing == 'y':
+            continue
+        else:
+            print('\n' + Fore.RED + '--------------------程序即将退出……')
+            for i in range(3):
+                time.sleep(1)
+                print(Fore.RED + '--------------------' + str(4-i))
+            exit()
+
+if __name__ == '__main__':
+    main()
